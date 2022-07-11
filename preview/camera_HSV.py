@@ -3,6 +3,8 @@ from random import randint
 import cv2
 import numpy
 
+from predict import predict_image
+
 
 def read_values_from_file(filename):
     file = open(filename, 'r')
@@ -12,12 +14,6 @@ def read_values_from_file(filename):
     file.close()
     return values_split
 
-def predict(image_path='./photo_HSV.jpg'):
-    from predict import predict_image
-    # neural network predict
-    # predict...
-
-    return predict_image(image_path)
 
 def create_window():
     cv2.namedWindow('window_HSV')
@@ -31,7 +27,7 @@ def create_window():
     cv2.createTrackbar('FPS', 'window_HSV', 0, 10, print)
 
 
-H_up, H_down, S_up, S_down, V_up, V_down = read_values_from_file('HSV.txt')
+H_up, H_down, S_up, S_down, V_up, V_down = read_values_from_file('.HSV')
 
 create_window()
 
@@ -68,6 +64,7 @@ key = -1
 while key == -1:
     imread, image = cap.read()
     image = image[40:440, 120:520]
+    image = cv2.flip(image, 1)
     image_original = image
     image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV_FULL)
     H_up, H_down, S_up, S_down, V_up, V_down, FPS = get_sliders()
@@ -78,19 +75,16 @@ while key == -1:
     image_mask = cv2.inRange(image, nu_down, nu_up)
     image_gray = cv2.cvtColor(cv2.cvtColor(image, cv2.COLOR_HSV2BGR), cv2.COLOR_BGR2GRAY)
     image_mask_and = cv2.bitwise_and(image_gray, image_mask)
-    write_grey_values('HSV.txt')
+    write_grey_values('.HSV')
 
     image_mask_and_resize = cv2.resize(image_mask_and, (40, 40))
 
-    cv2.imwrite('photo_HSV.jpg', image_mask_and_resize)
+    cv2.imwrite('photo_HSV.jpg', cv2.flip(image_mask_and_resize, 1))
 
-    number = str(predict())
+    number = str(predict_image('photo_HSV.jpg'))
     cv2.rectangle(image_original, (0, 0), (40, 40), (127, 127, 127), -1)
     cv2.putText(image_original, number, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 5)
     cv2.imshow('win1', image_original)
     cv2.imshow('win2', image_mask_and)
     key = cv2.waitKey(20 + FPS * 20)
 cap.release()
-
-
-
