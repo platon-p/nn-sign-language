@@ -1,5 +1,3 @@
-from random import randint
-
 import cv2
 import numpy
 
@@ -83,8 +81,9 @@ while key == -1:
 
     number = str(predict_image('photo_HSV.jpg'))
     cv2.rectangle(image_original, (0, 0), (40, 40), (127, 127, 127), -1)
-    cv2.putText(image_original, number, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 5)
+    cv2.putText(image_original, number, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
     cv2.imshow('win1', image_original)
     cv2.imshow('win2', image_mask_and)
     key = cv2.waitKey(20 + FPS * 20)
+
 cap.release()

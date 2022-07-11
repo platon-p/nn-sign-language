@@ -9,7 +9,6 @@ Theta22 = np.loadtxt('../Theta22')
 def predict_image(image_path):
     img = np.array(Image.open(image_path))
     img = img.reshape(1600, 1)
-
     return predict(img)
 
 
@@ -18,8 +17,7 @@ def sigmoid(x):
 
 
 def predict(image_pixels):
-    input_layer = image_pixels.copy()
-    input_layer = np.append(1, input_layer)
+    input_layer = np.append(1, image_pixels)
 
     hidden_layer = sigmoid(np.dot(Theta11, input_layer))
     hidden_layer = np.append(1, hidden_layer)
