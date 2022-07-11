@@ -1,3 +1,5 @@
+from random import randint
+
 import cv2
 import numpy
 
@@ -10,6 +12,12 @@ def read_values_from_file(filename):
     file.close()
     return values_split
 
+def predict(image_path='./photo_HSV.jpg'):
+    from predict import predict_image
+    # neural network predict
+    # predict...
+
+    return predict_image(image_path)
 
 def create_window():
     cv2.namedWindow('window_HSV')
@@ -20,11 +28,7 @@ def create_window():
     cv2.createTrackbar('S_down', 'window_HSV', S_down, 255, print)
     cv2.createTrackbar('V_up', 'window_HSV', V_up, 255, print)
     cv2.createTrackbar('V_down', 'window_HSV', V_down, 255, print)
-
-    #cv2.namedWindow('window_grey')
-    #cv2.resizeWindow('window_grey', 400, 300)
-    #cv2.createTrackbar('H_up', 'window_grey', up, 255, print)
-    #cv2.createTrackbar('H_down', 'window_grey', down, 255, print)
+    cv2.createTrackbar('FPS', 'window_HSV', 0, 10, print)
 
 
 H_up, H_down, S_up, S_down, V_up, V_down = read_values_from_file('HSV.txt')
@@ -39,11 +43,8 @@ def get_sliders():
     S_down = cv2.getTrackbarPos('S_down', 'window_HSV')
     V_up = cv2.getTrackbarPos('V_up', 'window_HSV')
     V_down = cv2.getTrackbarPos('V_down', 'window_HSV')
-    return H_up, H_down, S_up, S_down, V_up, V_down
-
-    #H_up = cv2.getTrackbarPos('H_up', 'window_grey')
-    #H_down = cv2.getTrackbarPos('H_down', 'window_grey')
-    #return H_up, H_down
+    FPS = cv2.getTrackbarPos('FPS', 'window_HSV')
+    return H_up, H_down, S_up, S_down, V_up, V_down, FPS
 
 
 def write_grey_values(filename):
@@ -66,21 +67,30 @@ cap = cv2.VideoCapture(0)
 key = -1
 while key == -1:
     imread, image = cap.read()
-    image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV_FULL)
     image = image[40:440, 120:520]
-    H_up, H_down, S_up, S_down, V_up, V_down =get_sliders()
+    image_original = image
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV_FULL)
+    H_up, H_down, S_up, S_down, V_up, V_down, FPS = get_sliders()
     up = [H_up, S_up, V_up]
     down = [H_down, S_down, V_down]
     nu_up = numpy.array(up)
     nu_down = numpy.array(down)
     image_mask = cv2.inRange(image, nu_down, nu_up)
-    image = cv2.cvtColor(cv2.cvtColor(image, cv2.COLOR_HSV2BGR), cv2.COLOR_BGR2GRAY)
-    image_mask_and = cv2.bitwise_and(image, image_mask)
+    image_gray = cv2.cvtColor(cv2.cvtColor(image, cv2.COLOR_HSV2BGR), cv2.COLOR_BGR2GRAY)
+    image_mask_and = cv2.bitwise_and(image_gray, image_mask)
     write_grey_values('HSV.txt')
 
     image_mask_and_resize = cv2.resize(image_mask_and, (40, 40))
+
     cv2.imwrite('photo_HSV.jpg', image_mask_and_resize)
 
-    cv2.imshow('win1', image_mask_and)
-    key = cv2.waitKey(100)
+    number = str(predict())
+    cv2.rectangle(image_original, (0, 0), (40, 40), (127, 127, 127), -1)
+    cv2.putText(image_original, number, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 5)
+    cv2.imshow('win1', image_original)
+    cv2.imshow('win2', image_mask_and)
+    key = cv2.waitKey(20 + FPS * 20)
 cap.release()
+
+
+
